@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <title>贪吃蛇小游戏</title>
+    <title>贪吃蛇 不贪吃</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -190,17 +190,10 @@
             50% { transform: rotate(90deg); }
         }
 
-        /* 横屏模式下的隐藏元素 */
-        @media (orientation: landscape) and (max-height: 500px) {
-            .game-container { display: none !important; }
-            .landscape-wrapper { display: flex !important; }
-            .controls { display: none !important; }
-        }
-
-        /* 竖屏模式隐藏横屏控件 */
-        @media (orientation: portrait) {
-            .landscape-wrapper { display: none !important; }
-        }
+        /* 横屏模式 - 通过JS添加的class控制 */
+        body.landscape-mode .game-container { display: none !important; }
+        body.landscape-mode .landscape-wrapper { display: flex !important; }
+        body:not(.landscape-mode) .landscape-wrapper { display: none !important; }
 
         @media (max-width: 500px) { h1{font-size:1.8rem} .mobile-controls{display:block} .controls{display:none} .swipe-hint{display:block} .mobile-btn{width:65px;height:65px} }
         @media (max-width: 350px) { .mobile-btn{width:55px;height:55px;font-size:1.4rem} }
@@ -495,7 +488,7 @@
 
         let currentSkin = 'default';
         let currentDifficulty = 'easy';
-        let isLandscape = window.innerWidth > window.innerHeight && window.innerHeight < 500;
+        let isLandscape = window.innerWidth > window.innerHeight;
 
         // 获取当前活跃的canvas和上下文
         let canvas = document.getElementById(isLandscape ? 'gameCanvasLand' : 'gameCanvas');
@@ -586,14 +579,28 @@
             canvas.style.height = m + 'px';
         }
         resizeCanvas();
+        checkOrientation(); // 页面加载时立即检查方向
         window.addEventListener('resize', () => {
             resizeCanvas();
             checkOrientation();
         });
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                resizeCanvas();
+                checkOrientation();
+            }, 100);
+        });
 
         function checkOrientation() {
             const wasLandscape = isLandscape;
-            isLandscape = window.innerWidth > window.innerHeight && window.innerHeight < 500;
+            isLandscape = window.innerWidth > window.innerHeight;
+
+            // 切换横屏模式的body class
+            if (isLandscape) {
+                document.body.classList.add('landscape-mode');
+            } else {
+                document.body.classList.remove('landscape-mode');
+            }
 
             if (isLandscape !== wasLandscape) {
                 canvas = document.getElementById(isLandscape ? 'gameCanvasLand' : 'gameCanvas');
